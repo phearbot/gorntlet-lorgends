@@ -4,11 +4,11 @@ __lua__
 -- loop
 function _init()
  map_flags()
- make_player()
+ init_player()
 end
 
 function _update60()
- move_player()
+ player_update()
 	player_actions()
 end
 
@@ -17,6 +17,7 @@ function _draw()
  draw_map()
  draw_player()
 end
+
 -->8
 -- level
 function map_flags()
@@ -24,11 +25,7 @@ function map_flags()
 end
 
 function draw_map()
- -- params:
- --  tile start x/y
- --  screen x/y
- --  tile end x/y
- map(0,0,0,0,124,64)
+ map(0,0)
 end
 
 function tile_attr(tile_type,x,y)
@@ -42,37 +39,79 @@ function can_move(x,y)
 end
 -->8
 -- player
-function make_player()
- p={}
- p.x=5*8 -- pos in tiles 
- p.y=5*8 
- p.s=34 -- spr id
- p.sx=2 -- spr size 
- p.sy=3
- p.sp=5 -- speed
- p.num=1-- number
+-- ⬆️⬇️⬅️➡️❎ for use in sublime
+function init_player()
+ player={
+  num=1, --player num for color
+  x=5*8, -- pos in tiles 
+  y=5*8, 
+  sprite=34, -- spr id
+  spritex=2, -- spr size 
+  spritey=3,
+  mirror=false,
+  deltax=0, -- movement
+  deltay=0,
+  maxspeed=2,
+  accel=0.5,
+  moving=false,
+  slide=false,
+  friction=.85
+ }
 end
 
 function draw_player()
- spr(p.s,p.x,p.y,p.sx,p.sy)
+ spr(player.sprite,player.x,player.y,player.spritex,player.spritey)
  pal_swap()
 end
 
-function move_player()
- newx=p.x
- newy=p.y
+function player_update()
+ --slow that fucker
+ player.deltax*=player.friction
+ player.deltay*=player.friction
 
- if(btnp(⬅️)) newx=p.x-p.sp
- if(btnp(➡️)) newx=p.x+p.sp
- if(btnp(⬆️)) newy=p.y-p.sp
- if(btnp(⬇️)) newy=p.y+p.sp
-
- if (can_move(newx+newy))then
-  p.x=mid(0,newx,127)
-  p.y=mid(0,newy,63) -- dont get this bit
- else
-  sfx(0)
+ if btn(⬅️) then
+  player.deltax-=player.accel
+  player.moving=true
  end
+ if btn(➡️) then
+  player.deltax+=player.accel
+  player.moving=true
+ end
+ if btn(⬆️) then
+  player.deltay-=player.accel
+  player.moving=true
+ end
+ if btn(⬇️) then
+  player.deltay+=player.accel
+  player.moving=true
+ end
+
+ if player.running
+  and not btn(⬅️)
+  and not btn(➡️)
+  and not btn(⬆️)
+  and not btn(⬇️) then
+  player.moving=false
+  player.slide=true
+ end
+
+ if player.sliding then
+  if abs(player.dx)<.2
+  or player.running then
+    player.dx=0
+    player.sliding=false
+  end
+ end
+
+  player.x+=player.deltax
+  player.y+=player.deltay
+
+ --if (can_move(newx+newy))then
+ -- player.x=mid(0,newx,127)
+ -- player.y=mid(0,newy,63) -- dont get this bit
+ --else
+ -- sfx(0)
+ --end
 end
 
 function player_actions()
@@ -80,22 +119,22 @@ function player_actions()
 end
 
 function color_change()
- if(p.num<4)then
-  p.num+=1
+ if(player.num<4)then
+  player.num+=1
  else
-  p.num=1
+  player.num=1
  end
 end
 
 function pal_swap()
- if (p.num == 1) then
+ if (player.num == 1) then
   --as it
   pal(3,3) pal(11,11)
- elseif (p.num == 2) then
+ elseif (player.num == 2) then
   pal(3,1) pal(11,12)
- elseif (p.num == 3) then
+ elseif (player.num == 3) then
   pal(3,4) pal(11,10)
- elseif (p.num == 4) then
+ elseif (player.num == 4) then
   pal(3,2) pal(11,8)
  end
 end
