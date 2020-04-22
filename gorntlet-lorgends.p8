@@ -1,6 +1,104 @@
 pico-8 cartridge // http://www.pico-8.com
-version 20
+version 21
 __lua__
+-- loop
+function _init()
+ map_flags()
+ make_player()
+end
+
+function _update60()
+ move_player()
+	player_actions()
+end
+
+function _draw()
+ cls(0)
+ draw_map()
+ draw_player()
+end
+-->8
+-- level
+function map_flags()
+ wall=0
+end
+
+function draw_map()
+ -- params:
+ --  tile start x/y
+ --  screen x/y
+ --  tile end x/y
+ map(0,0,0,0,124,64)
+end
+
+function tile_attr(tile_type,x,y)
+ tile=mget(x,y)
+ flags=fget(tile,tile_type)
+ return flags
+end
+
+function can_move(x,y)
+ return not tile_attr(wall,x,y)
+end
+-->8
+-- player
+function make_player()
+ p={}
+ p.x=5*8 -- pos in tiles 
+ p.y=5*8 
+ p.s=34 -- spr id
+ p.sx=2 -- spr size 
+ p.sy=3
+ p.sp=5 -- speed
+ p.num=1-- number
+end
+
+function draw_player()
+ spr(p.s,p.x,p.y,p.sx,p.sy)
+ pal_swap()
+end
+
+function move_player()
+ newx=p.x
+ newy=p.y
+
+ if(btnp(⬅️)) newx=p.x-p.sp
+ if(btnp(➡️)) newx=p.x+p.sp
+ if(btnp(⬆️)) newy=p.y-p.sp
+ if(btnp(⬇️)) newy=p.y+p.sp
+
+ if (can_move(newx+newy))then
+  p.x=mid(0,newx,127)
+  p.y=mid(0,newy,63) -- dont get this bit
+ else
+  sfx(0)
+ end
+end
+
+function player_actions()
+ if(btnp(❎)) color_change() 
+end
+
+function color_change()
+ if(p.num<4)then
+  p.num+=1
+ else
+  p.num=1
+ end
+end
+
+function pal_swap()
+ if (p.num == 1) then
+  --as it
+  pal(3,3) pal(11,11)
+ elseif (p.num == 2) then
+  pal(3,1) pal(11,12)
+ elseif (p.num == 3) then
+  pal(3,4) pal(11,10)
+ elseif (p.num == 4) then
+  pal(3,2) pal(11,8)
+ end
+end
 
 __gfx__
 000000007617767777177777d75005000050057d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -58,3 +156,5 @@ __map__
 0410101010101010101010101010101010101010101010030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0410101010101010101010101010101010101010101010030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0013131313131313131313131313131313131313131313000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__sfx__
+000200000801003010030000900001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
