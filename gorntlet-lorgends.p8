@@ -16,6 +16,9 @@ function _draw()
  cls(0)
  draw_map()
  draw_player()
+ print(player.moving,0,0,7)
+ print(player.deltax,0,8,7)
+ print(player.slide,0,16.7)
 end
 
 -->8
@@ -49,6 +52,7 @@ function init_player()
   spritex=2, -- spr size 
   spritey=3,
   mirror=false,
+  direction=down,
   deltax=0, -- movement
   deltay=0,
   maxspeed=2,
@@ -71,22 +75,27 @@ function player_update()
 
  if btn(⬅️) then
   player.deltax-=player.accel
+  player.direction=left
   player.moving=true
  end
  if btn(➡️) then
   player.deltax+=player.accel
+  player.direction=right
   player.moving=true
  end
  if btn(⬆️) then
   player.deltay-=player.accel
+  player.direction=up
   player.moving=true
  end
  if btn(⬇️) then
   player.deltay+=player.accel
+  player.direction=down
   player.moving=true
  end
+ 
 
- if player.running
+ if player.moving
   and not btn(⬅️)
   and not btn(➡️)
   and not btn(⬆️)
@@ -95,23 +104,15 @@ function player_update()
   player.slide=true
  end
 
- if player.sliding then
-  if abs(player.dx)<.2
-  or player.running then
-    player.dx=0
-    player.sliding=false
+ if player.slide then
+  if abs(player.deltax)<.2 then
+    player.deltax=0
+    player.slide=false
   end
  end
 
   player.x+=player.deltax
   player.y+=player.deltay
-
- --if (can_move(newx+newy))then
- -- player.x=mid(0,newx,127)
- -- player.y=mid(0,newy,63) -- dont get this bit
- --else
- -- sfx(0)
- --end
 end
 
 function player_actions()
