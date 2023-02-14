@@ -111,6 +111,10 @@ function player_update()
   end
  end
 
+  -- apply max speed clamp
+  player.deltax = mid(-player.maxspeed, player.deltax, player.maxspeed)
+  player.deltay = mid(-player.maxspeed, player.deltay, player.maxspeed)
+  -- this would need to be normalized or whatever
   player.x+=player.deltax
   player.y+=player.deltay
 end
